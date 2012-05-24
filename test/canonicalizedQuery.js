@@ -1,6 +1,6 @@
 var cq = require('../lib/canonicalizedQuery')
 
-exports.signature = {
+exports.canonicalizedQuery = {
     "should be the right thing": function (test) {
         var qs = {
             'Action': 'GetQueueUrl',
