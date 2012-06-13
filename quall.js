@@ -1,18 +1,21 @@
 var getQueueUrl = require('./lib/getQueueUrl'),
     receiveMessage = require('./lib/receiveMessage'),
-    deleteMessage = require('./lib/deleteMessage');
+    deleteMessage = require('./lib/deleteMessage'),
+    log = function noop() {};
+
+if (process.logging) log = process.logging('quall');
 
 module.exports = function quall(opts, callback) {
     var creds = opts.awsCredentials;
 
-    console.log('getting queue url for %s', opts.queueName);
+    log('getting queue url for %queueName', opts);
 
     getQueueUrl(opts.queueName, creds, function (err, url, body) {
         if (err) throw err;
 
         if (url) {
-            console.log('url = %s', url);
-            console.log('starting to listen');
+            log('url = %url', {url: url});
+            log('starting to listen');
 
             var handleMessage = makeHandleMessage(opts, url, creds, callback);
 
@@ -24,17 +27,17 @@ module.exports = function quall(opts, callback) {
 
 function makeHandleMessage(opts, url, creds, callback) {
     return function () {
-        console.log('checking for message');
+        // checking for message
 
         receiveMessage(url, creds, function (err, msg, body) {
             if (msg == null) {
-                console.log('no messages on %s', opts.queueName);   
+                // nothing here - perhaps emit event?
             } else {
-                console.log('received message %s', msg.id);   
+                log('received message %id', msg);
 
                 if (opts.pop) {
                     deleteMessage(url, msg.receiptHandle, creds, function () {
-                        console.log('deleted message %s', msg.id);   
+                        log('deleted message %id', msg);
                     });
                 }
 
